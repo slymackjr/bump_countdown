@@ -14,6 +14,7 @@ class _HomeScreenState extends State<HomeScreen> {
   DateTime? _lmpDate;
   DateTime? _eddDate;
   int _daysRemaining = 0;
+  int? _selectedRecordId;
   final DatabaseHelper _dbHelper = DatabaseHelper();
 
   @override
@@ -30,6 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _lmpDate = DateTime.parse(records.last['lmpDate']);
         _eddDate = DateTime.parse(records.last['eddDate']);
         _daysRemaining = records.last['daysRemaining'];
+        _selectedRecordId = records.last['id'];
       });
     }
   }
@@ -92,6 +94,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _rateRecord(int id, int rating) async {
     await _dbHelper.updateRecord(id, {'rating': rating});
+    _loadLastRecord(); // Reload records after rating
+  }
+
+  void _selectRecord(Map<String, dynamic> record) {
+    setState(() {
+      _lmpDate = DateTime.parse(record['lmpDate']);
+      _eddDate = DateTime.parse(record['eddDate']);
+      _daysRemaining = record['daysRemaining'];
+      _selectedRecordId = record['id'];
+    });
   }
 
   @override
@@ -155,8 +167,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       DateTime eddDate = DateTime.parse(record['eddDate']);
                       int daysRemaining = record['daysRemaining'];
                       int? rating = record['rating'];
+                      bool isSelected = record['id'] == _selectedRecordId;
 
                       return Card(
+                        color: isSelected ? Colors.blue[100] : null,
                         child: Column(
                           children: [
                             ListTile(
@@ -177,18 +191,21 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                 ],
                               ),
+                              onTap: () => _selectRecord(record),
                             ),
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 16.0),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: List.generate(5, (starIndex) {
-                                  return IconButton(
-                                    icon: Icon(
-                                      rating != null && rating > starIndex ? Icons.star : Icons.star_border,
+                                  return Expanded(
+                                    child: IconButton(
+                                      icon: Icon(
+                                        rating != null && rating > starIndex ? Icons.star : Icons.star_border,
+                                      ),
+                                      color: Colors.amber,
+                                      onPressed: () => _rateRecord(record['id'], starIndex + 1),
                                     ),
-                                    color: Colors.amber,
-                                    onPressed: () => _rateRecord(record['id'], starIndex + 1),
                                   );
                                 }),
                               ),
@@ -208,3 +225,4 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+
