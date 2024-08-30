@@ -59,6 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
       'daysRemaining': _daysRemaining,
     };
     await _dbHelper.insertRecord(record);
+    _loadLastRecord(); // Reload records after saving a new one
   }
 
   void _setAlert() {
@@ -71,45 +72,138 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _editRecord(int id, DateTime lmpDate, DateTime eddDate, int daysRemaining) async {
+    setState(() {
+      _lmpDate = lmpDate;
+      _eddDate = eddDate;
+      _daysRemaining = daysRemaining;
+    });
+    await _dbHelper.updateRecord(id, {
+      'lmpDate': lmpDate.toIso8601String(),
+      'eddDate': eddDate.toIso8601String(),
+      'daysRemaining': daysRemaining,
+    });
+  }
+
+  void _deleteRecord(int id) async {
+    await _dbHelper.deleteRecord(id);
+    _loadLastRecord(); // Reload records after deletion
+  }
+
+  void _rateRecord(int id, int rating) async {
+    await _dbHelper.updateRecord(id, {'rating': rating});
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Bump Countdown"),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              _lmpDate == null
-                  ? "Select Last Menstrual Period (LMP) Date"
-                  : "LMP Date: ${DateFormat.yMMMd().format(_lmpDate!)}",
-              style: const TextStyle(fontSize: 20),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => _selectLmpDate(context),
-              child: const Text("Select LMP Date"),
-            ),
-            const SizedBox(height: 20),
-            if (_eddDate != null)
-              Column(
-                children: [
-                  Text(
-                    "Estimated Due Date (EDD): ${DateFormat.yMMMd().format(_eddDate!)}",
-                    style: const TextStyle(fontSize: 20),
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+        future: _dbHelper.getRecords(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          List<Map<String, dynamic>> records = snapshot.data!;
+
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  _lmpDate == null
+                      ? "Select Last Menstrual Period (LMP) Date"
+                      : "LMP Date: ${DateFormat.yMMMd().format(_lmpDate!)}",
+                  style: const TextStyle(fontSize: 20),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () => _selectLmpDate(context),
+                  child: const Text("Select LMP Date"),
+                ),
+                const SizedBox(height: 20),
+                if (_eddDate != null)
+                  Column(
+                    children: [
+                      Text(
+                        "Estimated Due Date (EDD): ${DateFormat.yMMMd().format(_eddDate!)}",
+                        style: const TextStyle(fontSize: 20),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        "Days Remaining: $_daysRemaining",
+                        style: const TextStyle(fontSize: 20, color: Colors.red),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 10),
-                  Text(
-                    "Days Remaining: $_daysRemaining",
-                    style: const TextStyle(fontSize: 20, color: Colors.red),
+                const SizedBox(height: 20),
+                const Text(
+                  "Pregnancy History",
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: records.length,
+                    itemBuilder: (context, index) {
+                      Map<String, dynamic> record = records[index];
+                      DateTime lmpDate = DateTime.parse(record['lmpDate']);
+                      DateTime eddDate = DateTime.parse(record['eddDate']);
+                      int daysRemaining = record['daysRemaining'];
+                      int? rating = record['rating'];
+
+                      return Card(
+                        child: Column(
+                          children: [
+                            ListTile(
+                              title: Text(
+                                "LMP: ${DateFormat.yMMMd().format(lmpDate)} - EDD: ${DateFormat.yMMMd().format(eddDate)}",
+                              ),
+                              subtitle: Text("Days Remaining: $daysRemaining"),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.edit),
+                                    onPressed: () => _editRecord(record['id'], lmpDate, eddDate, daysRemaining),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete),
+                                    onPressed: () => _deleteRecord(record['id']),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: List.generate(5, (starIndex) {
+                                  return IconButton(
+                                    icon: Icon(
+                                      rating != null && rating > starIndex ? Icons.star : Icons.star_border,
+                                    ),
+                                    color: Colors.amber,
+                                    onPressed: () => _rateRecord(record['id'], starIndex + 1),
+                                  );
+                                }),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+
+                    },
                   ),
-                ],
-              ),
-          ],
-        ),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

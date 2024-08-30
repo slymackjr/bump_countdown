@@ -23,19 +23,26 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2, // Increment the version number to apply the migration.
       onCreate: (db, version) {
         db.execute('''
-          CREATE TABLE history(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            lmpDate TEXT,
-            eddDate TEXT,
-            daysRemaining INTEGER
-          )
-        ''');
+        CREATE TABLE history(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          lmpDate TEXT,
+          eddDate TEXT,
+          daysRemaining INTEGER,
+          rating INTEGER
+        )
+      ''');
+      },
+      onUpgrade: (db, oldVersion, newVersion) {
+        if (oldVersion < 2) {
+          db.execute('ALTER TABLE history ADD COLUMN rating INTEGER');
+        }
       },
     );
   }
+
 
   Future<int> insertRecord(Map<String, dynamic> record) async {
     final db = await database;
@@ -56,4 +63,5 @@ class DatabaseHelper {
     final db = await database;
     return await db.update('history', record, where: 'id = ?', whereArgs: [id]);
   }
+
 }
