@@ -31,22 +31,42 @@ class DatabaseHelper {
           lmpDate TEXT,
           eddDate TEXT,
           daysRemaining INTEGER,
-          rating INTEGER
+          rating INTEGER,
+          childName TEXT,
+          gender TEXT
+        )
+      ''');
+        db.execute('''
+        CREATE TABLE alerts(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          historyId INTEGER,
+          alertDate TEXT,
+          message TEXT,
+          ringtone TEXT,
+          duration INTEGER,
+          image TEXT,
+          FOREIGN KEY (historyId) REFERENCES history (id) ON DELETE CASCADE
         )
       ''');
       },
       onUpgrade: (db, oldVersion, newVersion) {
         if (oldVersion < 2) {
           db.execute('ALTER TABLE history ADD COLUMN rating INTEGER');
+          db.execute('ALTER TABLE history ADD COLUMN childName TEXT');
+          db.execute('ALTER TABLE history ADD COLUMN gender TEXT');
         }
       },
     );
   }
 
-
   Future<int> insertRecord(Map<String, dynamic> record) async {
     final db = await database;
     return await db.insert('history', record);
+  }
+
+  Future<int> insertAlert(Map<String, dynamic> alert) async {
+    final db = await database;
+    return await db.insert('alerts', alert);
   }
 
   Future<List<Map<String, dynamic>>> getRecords() async {
@@ -54,9 +74,19 @@ class DatabaseHelper {
     return await db.query('history');
   }
 
+  Future<List<Map<String, dynamic>>> getAlerts() async {
+    final db = await database;
+    return await db.query('alerts');
+  }
+
   Future<int> deleteRecord(int id) async {
     final db = await database;
     return await db.delete('history', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<int> deleteAlert(int id) async {
+    final db = await database;
+    return await db.delete('alerts', where: 'id = ?', whereArgs: [id]);
   }
 
   Future<int> updateRecord(int id, Map<String, dynamic> record) async {
@@ -64,4 +94,8 @@ class DatabaseHelper {
     return await db.update('history', record, where: 'id = ?', whereArgs: [id]);
   }
 
+  Future<int> updateAlert(int id, Map<String, dynamic> alert) async {
+    final db = await database;
+    return await db.update('alerts', alert, where: 'id = ?', whereArgs: [id]);
+  }
 }
