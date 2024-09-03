@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
+import 'package:timezone/timezone.dart' as tz;
 import '../database_helper.dart';
-import 'package:image_picker/image_picker.dart'; // For picking images
-import 'dart:io'; // For handling file paths
+import '../main.dart';
 
 class AlertsScreen extends StatefulWidget {
   const AlertsScreen({super.key});
@@ -14,8 +15,6 @@ class AlertsScreen extends StatefulWidget {
 class _AlertsScreenState extends State<AlertsScreen> {
   List<Map<String, dynamic>> _alerts = [];
   final DatabaseHelper _dbHelper = DatabaseHelper();
-  final ImagePicker _picker = ImagePicker();
-  File? _selectedImage;
 
   @override
   void initState() {
@@ -23,24 +22,66 @@ class _AlertsScreenState extends State<AlertsScreen> {
     _loadAlerts();
   }
 
+  // Schedule the notification
+  void _scheduleNotification(Map<String, dynamic> alert) async {
+    final alertDate = DateTime.parse(alert['alertDate']);
+    final duration = alert['duration'] ?? 5;
+
+    await flutterLocalNotificationsPlugin.zonedSchedule(
+      alert['id'],
+      alert['message'] ?? 'Due date is approaching!',
+      'Ringtone: ${alert['ringtone'] ?? 'Default'}',
+      tz.TZDateTime.from(alertDate.subtract(Duration(minutes: duration)), tz.local),
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'your_channel_id',
+          'Alert Notifications',
+          channelDescription: 'Notification channel for alerts',
+          importance: Importance.high,
+          priority: Priority.high,
+          sound: RawResourceAndroidNotificationSound('notification_sound'),
+        ),
+      ),
+      androidAllowWhileIdle: true,
+      matchDateTimeComponents: DateTimeComponents.dateAndTime,
+      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.wallClockTime,
+    );
+  }
+
+  // Cancel a scheduled notification
+  void _cancelNotification(int id) async {
+    await flutterLocalNotificationsPlugin.cancel(id);
+  }
+
+  // Load alerts from the database
   void _loadAlerts() async {
     List<Map<String, dynamic>> alerts = await _dbHelper.getAlerts();
     setState(() {
       _alerts = alerts;
     });
+
+    // Schedule notifications for all loaded alerts
+    for (var alert in _alerts) {
+      _scheduleNotification(alert);
+    }
   }
 
+  // Delete an alert and cancel its notification
   void _deleteAlert(int id) async {
     await _dbHelper.deleteAlert(id);
+    _cancelNotification(id);
     _loadAlerts(); // Reload alerts after deletion
   }
 
+  // Dialog to add or edit alerts
   void _showAlertDialog({Map<String, dynamic>? alert}) {
     String message = alert?['message'] ?? 'Due date is approaching!';
     String ringtone = alert?['ringtone'] ?? 'Default';
     int duration = alert?['duration'] ?? 5;
-    String? image = alert?['image'];
     int? historyId = alert?['historyId'];
+    DateTime alertDate = alert != null
+        ? DateTime.parse(alert['alertDate'])
+        : DateTime.now();
 
     showDialog(
       context: context,
@@ -67,20 +108,35 @@ class _AlertsScreenState extends State<AlertsScreen> {
                 onChanged: (value) => duration = int.tryParse(value) ?? 5,
               ),
               const SizedBox(height: 10),
-              if (image != null)
-                Image.file(File(image), height: 100, width: 100, fit: BoxFit.cover),
-              const SizedBox(height: 10),
               ElevatedButton(
                 onPressed: () async {
-                  final pickedImage = await _picker.pickImage(source: ImageSource.gallery);
-                  if (pickedImage != null) {
-                    setState(() {
-                      _selectedImage = File(pickedImage.path);
-                    });
+                  final pickedDate = await showDatePicker(
+                    context: context,
+                    initialDate: alertDate,
+                    firstDate: DateTime.now(),
+                    lastDate: DateTime(2101),
+                  );
+                  if (pickedDate != null) {
+                    final pickedTime = await showTimePicker(
+                      context: context,
+                      initialTime: TimeOfDay.fromDateTime(alertDate),
+                    );
+                    if (pickedTime != null) {
+                      setState(() {
+                        alertDate = DateTime(
+                          pickedDate.year,
+                          pickedDate.month,
+                          pickedDate.day,
+                          pickedTime.hour,
+                          pickedTime.minute,
+                        );
+                      });
+                    }
                   }
                 },
-                child: const Text('Select Image'),
+                child: const Text('Select Alert Date & Time'),
               ),
+              Text("Selected: ${DateFormat.yMMMd().add_jm().format(alertDate)}"),
             ],
           ),
           actions: [
@@ -97,8 +153,8 @@ class _AlertsScreenState extends State<AlertsScreen> {
                   'message': message,
                   'ringtone': ringtone,
                   'duration': duration,
-                  'image': _selectedImage?.path ?? image,
                   'historyId': historyId,
+                  'alertDate': alertDate.toIso8601String(),
                 };
                 if (alert == null) {
                   await _dbHelper.insertAlert(alertData);
@@ -115,6 +171,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
     );
   }
 
+  // Main widget build method
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -135,13 +192,12 @@ class _AlertsScreenState extends State<AlertsScreen> {
           final message = alert['message'] ?? 'No Message';
           final ringtone = alert['ringtone'] ?? 'Default';
           final duration = alert['duration'] ?? 5;
-          final image = alert['image'] ?? 'No Image';
 
           return Card(
             child: ListTile(
-              title: Text("Alert Date: ${DateFormat.yMMMd().format(alertDate)}"),
+              title: Text("Alert Date: ${DateFormat.yMMMd().add_jm().format(alertDate)}"),
               subtitle: Text("Message: $message, Ringtone: $ringtone, Duration: $duration min"),
-              leading: image != 'No Image' ? Image.file(File(image), height: 50, width: 50, fit: BoxFit.cover) : const Icon(Icons.child_care),
+              leading: const Icon(Icons.notification_important),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [

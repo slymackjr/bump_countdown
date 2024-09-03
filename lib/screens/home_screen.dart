@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../notifications_service.dart';
+
 import '../database_helper.dart';
 import 'history_screen.dart';
 import 'alerts_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final VoidCallback onToggleTheme;
+
+  const HomeScreen({super.key, required this.onToggleTheme});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -25,7 +27,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    NotificationService().initNotifications();
     _loadLastRecord();
   }
 
@@ -57,7 +58,6 @@ class _HomeScreenState extends State<HomeScreen> {
         _daysRemaining = _eddDate!.difference(DateTime.now()).inDays;
       });
       await _saveRecord();
-      _setAlert();
     }
   }
 
@@ -75,16 +75,6 @@ class _HomeScreenState extends State<HomeScreen> {
       await _dbHelper.insertRecord(record);
     }
     _loadLastRecord(); // Reload records after saving
-  }
-
-  void _setAlert() {
-    if (_eddDate != null) {
-      NotificationService().scheduleNotification(
-        _eddDate!,
-        'EDD Alert',
-        'Today is the expected due date!',
-      );
-    }
   }
 
   void _showEditChildDialog() {
@@ -253,9 +243,7 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.dark_mode),
-            onPressed: () {
-              // Implement dark mode toggle
-            },
+            onPressed: widget.onToggleTheme,
           ),
         ],
       ),

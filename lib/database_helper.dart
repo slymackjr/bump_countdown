@@ -44,7 +44,6 @@ class DatabaseHelper {
           message TEXT,
           ringtone TEXT,
           duration INTEGER,
-          image TEXT,
           FOREIGN KEY (historyId) REFERENCES history (id) ON DELETE CASCADE
         )
       ''');

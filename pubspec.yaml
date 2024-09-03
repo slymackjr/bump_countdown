@@ -31,7 +31,7 @@ dependencies:
   flutter:
     sdk: flutter
  # added dependencies located here.
-  flutter_local_notifications: ^14.0.0
+  flutter_local_notifications: ^17.2.1+2
   timezone: ^0.9.0
   intl: ^0.18.0
   sqflite: ^2.0.0+4
