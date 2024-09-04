@@ -1,3 +1,4 @@
+import 'package:bump_countdown/screens/profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -148,7 +149,7 @@ class _HomeScreenState extends State<HomeScreen> {
           onRecordSelected: _selectRecord,
         );
       case 2:
-        return const AlertsScreen();
+        return const ProfileScreen();
       default:
         return _homeContent();
     }
@@ -259,8 +260,8 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'History',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'Alerts',
+            icon: Icon(Icons.person),
+            label: 'Profile',
           ),
         ],
         currentIndex: _selectedIndex,

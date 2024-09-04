@@ -42,11 +42,13 @@ class _AlertsScreenState extends State<AlertsScreen> {
           sound: RawResourceAndroidNotificationSound('notification_sound'),
         ),
       ),
-      androidAllowWhileIdle: true,
+      androidAllowWhileIdle: true, // Deprecated
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle, // New parameter
       matchDateTimeComponents: DateTimeComponents.dateAndTime,
       uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.wallClockTime,
     );
   }
+
 
   // Cancel a scheduled notification
   void _cancelNotification(int id) async {
