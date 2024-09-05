@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" style="border-radius:10px; background:linear-gradient(135deg, #FCE38A, #F38181)">
+    <!-- Text for App Name -->
+    <text x="100" y="170" text-anchor="middle" font-size="20" fill="black" font-family="Arial" font-weight="bold">Bump Countdown</text>
+    <!-- Text for App Name -->
+</svg>

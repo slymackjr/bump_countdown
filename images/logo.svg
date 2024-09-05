@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" style="border-radius:10px; background:linear-gradient(135deg, #FCE38A, #F38181)">
+    <!-- Gradient Definition -->
+    <defs>
+        <linearGradient id="bgGradient" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" style="stop-color:#FCE38A;" />
+            <stop offset="100%" style="stop-color:#F38181;" />
+        </linearGradient>
+    </defs>
+
+    <!-- Background Circle -->
+    <circle cx="100" cy="100" r="90" fill="url(#bgGradient)" />
+
+    <!-- Baby Bump Shape -->
+    <path d="M100,50 C130,50 130,100 100,140 C70,100 70,50 100,50 Z" fill="white" stroke="#F38181" stroke-width="8" />
+
+    <!-- Countdown Timer Arc -->
+    <path d="M100,20 A80,80 0 1,1 99,20" stroke="#FF9A9E" stroke-width="6" fill="none" stroke-linecap="round" />
+
+    <!-- Timer Dot -->
+    <circle cx="100" cy="20" r="4" fill="#FF9A9E" />
+
+    <!-- Text for App Name -->
+    <text x="50%" y="85%" text-anchor="middle" font-size="18" fill="white" font-family="Arial" font-weight="bold">Bump Countdown</text>
+</svg>

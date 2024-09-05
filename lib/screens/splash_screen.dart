@@ -1,5 +1,5 @@
+import 'package:bump_countdown/screens/welcome_page.dart';
 import 'package:flutter/material.dart';
-import 'home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   final VoidCallback onToggleTheme; // Added to allow theme toggling from splash screen
@@ -49,7 +49,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     if (mounted) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomeScreen(onToggleTheme: widget.onToggleTheme)), // Pass the theme toggle callback to HomeScreen
+        //MaterialPageRoute(builder: (context) => HomeScreen(onToggleTheme: widget.onToggleTheme)), // Pass the theme toggle callback to HomeScreen
+        MaterialPageRoute(builder: (context) => const WelcomePage()),
       );
     }
   }
