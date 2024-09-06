@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" style="border-radius:10px; background:linear-gradient(135deg, #FCE38A, #F38181)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" style="border-radius:10px;">
     <!-- Gradient Definition -->
     <defs>
         <linearGradient id="bgGradient" x1="0" y1="0" x2="1" y2="1">
@@ -20,5 +20,5 @@
     <circle cx="100" cy="20" r="4" fill="#FF9A9E" />
 
     <!-- Text for App Name -->
-    <text x="50%" y="85%" text-anchor="middle" font-size="18" fill="white" font-family="Arial" font-weight="bold">Bump Countdown</text>
+    <text x="100" y="170" text-anchor="middle" font-size="18" fill="black" font-family="Arial" font-weight="bold">Bump Countdown</text>
 </svg>

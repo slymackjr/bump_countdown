@@ -7,13 +7,7 @@
         </linearGradient>
     </defs>
 
-    <!-- Background Circle -->
-    <circle cx="100" cy="100" r="90" fill="url(#bgGradient)" />
-
     <!-- Baby Bump Shape -->
     <path d="M100,50 C130,50 130,100 100,140 C70,100 70,50 100,50 Z" fill="white" stroke="#F38181" stroke-width="8" />
-
-    <!-- Countdown Timer Arc -->
-    <path d="M100,20 A80,80 0 1,1 99,20" stroke="#FF9A9E" stroke-width="6" fill="none" stroke-linecap="round" />
 
 </svg>
