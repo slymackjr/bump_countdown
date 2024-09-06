@@ -1,10 +1,10 @@
+import 'package:bump_countdown/screens/bmi_screen.dart';
 import 'package:bump_countdown/screens/profile_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-
 import '../database_helper.dart';
 import 'history_screen.dart';
-import 'alerts_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final VoidCallback onToggleTheme;
@@ -24,6 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String _childName = '';
   String _gender = 'Not Specified'; // Default value
   final DatabaseHelper _dbHelper = DatabaseHelper();
+  DateTime? _lastPressedBack;
 
   @override
   void initState() {
@@ -149,7 +150,7 @@ class _HomeScreenState extends State<HomeScreen> {
           onRecordSelected: _selectRecord,
         );
       case 2:
-        return const ProfileScreen();
+        return const BmiScreen();
       default:
         return _homeContent();
     }
@@ -212,7 +213,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.transgender), // Gender icon
+                    const Icon(Icons.male), // male icon
+                    const Icon(Icons.female), // female icon
                     const SizedBox(width: 5),
                     Text("Gender: $_gender"),
                   ],
@@ -236,38 +238,59 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  Future<bool> _onWillPop() async {
+    final now = DateTime.now();
+    final backButtonHasNotBeenPressedOrSnackBarHasBeenDismissed = _lastPressedBack == null || now.difference(_lastPressedBack!) > const Duration(seconds: 2);
+    if (backButtonHasNotBeenPressedOrSnackBarHasBeenDismissed) {
+      _lastPressedBack = now;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Press back again to exit'),
+        ),
+      );
+      return Future.value(false);
+    }
+    // Exit the app
+    SystemNavigator.pop();
+    return Future.value(true);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Bump Countdown"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.dark_mode),
-            onPressed: widget.onToggleTheme,
+    return WillPopScope(
+      onWillPop: _onWillPop, // Call the function to get the boolean value
+        child: Scaffold(
+          appBar: AppBar(
+            title: const Text("Bump Countdown"),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.dark_mode),
+                onPressed: widget.onToggleTheme,
+              ),
+            ],
+            automaticallyImplyLeading: false, // Ensures no leading widget is displayed
           ),
-        ],
-      ),
-      body: _getSelectedScreen(),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
+          body: _getSelectedScreen(),
+          bottomNavigationBar: BottomNavigationBar(
+            items: const <BottomNavigationBarItem>[
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home),
+                label: 'Home',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.history),
+                label: 'History',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.calculate),
+                label: 'BMI',
+              ),
+            ],
+            currentIndex: _selectedIndex,
+            selectedItemColor: Colors.amber[800],
+            onTap: _onItemTapped,
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: 'History',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.amber[800],
-        onTap: _onItemTapped,
-      ),
+        ),
     );
   }
 }
