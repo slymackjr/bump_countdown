@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:bump_countdown/screens/welcome_page.dart';
+import 'home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   final VoidCallback onToggleTheme;
@@ -57,7 +57,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     if (mounted) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => WelcomePage(onToggleTheme: widget.onToggleTheme)), // Pass the toggle function
+        MaterialPageRoute(builder: (context) => HomeScreen(onToggleTheme: widget.onToggleTheme)), // Pass the toggle function
       );
     }
   }

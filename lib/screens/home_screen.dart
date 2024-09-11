@@ -1,10 +1,14 @@
 import 'package:bump_countdown/screens/bmi_screen.dart';
-import 'package:bump_countdown/screens/profile_screen.dart';
+import 'package:bump_countdown/screens/tdee_screen.dart';
+import 'package:bump_countdown/screens/waist_to_height_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import '../database_helper.dart';
+import 'bmr_screen.dart';
+import 'body_fat_screen.dart';
 import 'history_screen.dart';
+import 'ibw_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final VoidCallback onToggleTheme;
@@ -151,77 +155,87 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       case 2:
         return const BmiScreen();
+      case 3:
+        return const BodyFatScreen(); // New Screen
+      case 4:
+        return const WhtRScreen(); // New Screen
+      case 5:
+        return const BmrScreen(); // New Screen
+      case 6:
+        return const TdeeScreen(); // New Screen
+      case 7:
+        return const IbwScreen(); // New Screen
       default:
         return _homeContent();
     }
   }
 
   Widget _homeContent() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            _lmpDate == null
-                ? "Select Last Menstrual Period (LMP) Date"
-                : "LMP Date: ${DateFormat.yMMMd().format(_lmpDate!)}",
-            style: const TextStyle(fontSize: 20),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () => _selectLmpDate(context),
-            child: const Text("Select LMP Date"),
-          ),
-          const SizedBox(height: 20),
-          // Conditionally show the Edit Child Info button
-          if (_eddDate != null && _daysRemaining > 0)
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center, // Centers content vertically
+          crossAxisAlignment: CrossAxisAlignment.center, // Centers content horizontally
+          children: [
+            Text(
+              _lmpDate == null
+                  ? "Select Last Menstrual Period (LMP) Date"
+                  : "LMP Date: ${DateFormat.yMMMd().format(_lmpDate!)}",
+              style: const TextStyle(fontSize: 20),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () => _showEditChildDialog(),
-              child: const Text("Edit Child Info"),
+              onPressed: () => _selectLmpDate(context),
+              child: const Text("Select LMP Date"),
             ),
-          const SizedBox(height: 20),
-          if (_eddDate != null)
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  "Estimated Due Date (EDD): ${DateFormat.yMMMd().format(_eddDate!)}",
-                  style: const TextStyle(fontSize: 20),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  "Days Remaining: $_daysRemaining",
-                  style: const TextStyle(fontSize: 20, color: Colors.red),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 10),
-                // Child Name Row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.child_care), // Child icon
-                    const SizedBox(width: 5),
-                    Text("Child Name: $_childName"),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                // Gender Row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.male), // male icon
-                    const Icon(Icons.female), // female icon
-                    const SizedBox(width: 5),
-                    Text("Gender: $_gender"),
-                  ],
-                ),
-              ],
-            ),
-        ],
+            const SizedBox(height: 20),
+            if (_eddDate != null && _daysRemaining > 0)
+              ElevatedButton(
+                onPressed: () => _showEditChildDialog(),
+                child: const Text("Edit Child Info"),
+              ),
+            const SizedBox(height: 20),
+            if (_eddDate != null)
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    "Estimated Due Date (EDD): ${DateFormat.yMMMd().format(_eddDate!)}",
+                    style: const TextStyle(fontSize: 20),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    "Days Remaining: $_daysRemaining",
+                    style: const TextStyle(fontSize: 20, color: Colors.red),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.child_care), // Child icon
+                      const SizedBox(width: 5),
+                      Text("Child Name: $_childName"),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.male), // male icon
+                      const Icon(Icons.female), // female icon
+                      const SizedBox(width: 5),
+                      Text("Gender: $_gender"),
+                    ],
+                  ),
+                ],
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -275,19 +289,40 @@ class _HomeScreenState extends State<HomeScreen> {
             items: const <BottomNavigationBarItem>[
               BottomNavigationBarItem(
                 icon: Icon(Icons.home),
-                label: 'Home',
+                label: '',
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.history),
-                label: 'History',
+                label: '',
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.calculate),
-                label: 'BMI',
+                label: '',
+              ),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.fitness_center),
+                  label: '',
+              ),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.height),
+                  label: '',
+              ),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.local_fire_department),
+                  label: ''
+              ),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.run_circle),
+                  label: '',
+              ),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.person),
+                  label: '',
               ),
             ],
             currentIndex: _selectedIndex,
             selectedItemColor: Colors.amber[800],
+            unselectedItemColor: Colors.grey, // Set color for unselected icons
             onTap: _onItemTapped,
           ),
         ),
